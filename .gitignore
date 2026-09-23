@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+data/
+*.sqlite3*
+.env
+.env.*
+!.env.example
+artifacts/
+~$*
+/docs/

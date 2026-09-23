@@ -1,0 +1,9 @@
+{
+  "ticker": "SBER",
+  "board": "TQBR",
+  "annual_volatility_pct": -10,
+  "max_drawdown_pct": 12,
+  "avg_daily_turnover_mrub": 150,
+  "bid_ask_spread_pct": 0.1,
+  "observation_days": 60
+}
