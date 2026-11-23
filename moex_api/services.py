@@ -22,9 +22,9 @@ def predict(data: StockRequest, storage, model_ready: bool):
     score, factors = calculate_risk(data)
     level = classify(score)
     notes = {
-        "low": "Низкий балл риска; проверьте качество исходных показателей.",
-        "medium": "Средний балл риска; рассмотрите вклад отдельных факторов.",
-        "high": "Высокий балл риска; требуется дополнительный анализ факторов.",
+        "low": "Низкий балл риска.",
+        "medium": "Средний балл риска.",
+        "high": "Высокий балл риска.",
     }
     result = PredictionResponse(
         request_id=uuid4(), created_at=datetime.now(timezone.utc), ticker=data.ticker,

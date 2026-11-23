@@ -32,7 +32,7 @@ def create_app(db_path=None, model_ready=None):
         title="MOEX Risk API", version="1.0.0", lifespan=lifespan,
         description="REST API оценки риска акций Мосбиржи. "
                     "Детерминированная модель, пользовательские показатели, сохранение в SQLite. "
-                    "Балл не является вероятностью убытка или инвестиционной рекомендацией.",
+                    "Балл риска: от 0 до 1.",
     )
     app.state.model_ready = (os.getenv("MOEX_MODEL_READY", "1") == "1") if model_ready is None else model_ready
     app.state.storage = storage
@@ -70,13 +70,13 @@ def create_app(db_path=None, model_ready=None):
     def model_info():
         return ModelInfo(name="moex-risk-baseline", version=MODEL_VERSION,
                          model_type="deterministic_heuristic", ready=app.state.model_ready,
-                         description="Фиксированная взвешенная формула. Обучение на биржевой истории не проводилось.",
+                         description="Взвешенная формула с фиксированными коэффициентами.",
                          thresholds={"low": "[0, 0.35)", "medium": "[0.35, 0.65)", "high": "[0.65, 1]"},
                          features=["annual_volatility_pct", "max_drawdown_pct",
                                    "avg_daily_turnover_mrub", "bid_ask_spread_pct"])
 
     @app.get("/instruments", response_model=list[Instrument], tags=["Сервис"],
-             summary="Справочник инструментов", description="Фиксированный список из пяти тикеров; не полный текущий листинг биржи.")
+             summary="Справочник инструментов", description="Пять поддерживаемых тикеров в режиме TQBR.")
     def instruments():
         return [Instrument(ticker=t, name=n) for t, n in services.INSTRUMENTS.items()]
 
