@@ -51,7 +51,7 @@ class PredictionResponse(BaseModel):
     created_at: datetime
     ticker: str
     board: str
-    risk_score: float = Field(ge=0, le=1, description="Балл риска, не вероятность убытка")
+    risk_score: float = Field(ge=0, le=1, description="Балл по взвешенной формуле")
     risk_level: RiskLevel
     recommendation: str
     model_version: str
