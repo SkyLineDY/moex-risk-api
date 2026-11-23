@@ -5,6 +5,6 @@ if not exist ".venv\Scripts\python.exe" (
   pause
   exit /b 1
 )
-echo Open http://127.0.0.1:8001 or http://127.0.0.1:8001/docs
+echo Open http://127.0.0.1:8002 or http://127.0.0.1:8002/docs
 .venv\Scripts\python.exe main.py
 pause

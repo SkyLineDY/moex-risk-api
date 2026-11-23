@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class RiskLevel(str, Enum):
@@ -46,7 +46,8 @@ class Factor(BaseModel):
 
 
 class PredictionResponse(BaseModel):
-    request_id: UUID
+    request_id: str
+    prediction_id: UUID
     created_at: datetime
     ticker: str
     board: str
@@ -57,10 +58,92 @@ class PredictionResponse(BaseModel):
     input_data: StockRequest
     factors: list[Factor]
     data_source: str = "user_provided"
+    trace_id: str | None = None
+    source: str = "single"
+
+    @model_validator(mode="before")
+    @classmethod
+    def read_previous_record(cls, value):
+        if isinstance(value, dict) and "prediction_id" not in value and "request_id" in value:
+            return {**value, "prediction_id": value["request_id"],
+                    "request_id": value.get("trace_id") or value["request_id"]}
+        return value
 
 
 class ErrorResponse(BaseModel):
     detail: str
+    request_id: str | None = None
+
+
+class BatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    items: list[StockRequest] = Field(min_length=1, max_length=8)
+
+
+class BatchResponse(BaseModel):
+    request_id: str
+    batch_size: int
+    processing_time_ms: float
+    items: list[PredictionResponse]
+
+
+class LLMRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    prompt: str = Field(min_length=1, max_length=5000)
+    model: str | None = Field(default=None, min_length=1, max_length=128)
+    temperature: float = Field(default=0.3, ge=0, le=2)
+    max_tokens: int = Field(default=300, ge=1, le=2000)
+
+    @field_validator("prompt")
+    @classmethod
+    def nonblank(cls, value):
+        if not value.strip():
+            raise ValueError("Prompt is blank")
+        return value
+
+
+class LLMResponse(BaseModel):
+    request_id: str
+    requested_model: str
+    returned_model: str | None = None
+    answer: str
+    finish_reason: str | None = None
+    usage: dict | None = None
+    latency_ms: float
+
+
+class ExplainedResponse(BaseModel):
+    prediction: PredictionResponse
+    llm: LLMResponse
+
+
+class PaginationMeta(BaseModel):
+    weekday: str
+    current_page: int
+    per_page: int
+    total_pages: int
+    total_items: int
+    timezone: str = "UTC"
+    next_page: str | None
+    prev_page: str | None
+
+
+class PaginatedResponse(BaseModel):
+    data: list[PredictionResponse]
+    meta: PaginationMeta
+
+
+class QueueStatus(BaseModel):
+    queue_size: int
+    queue_max_size: int
+    max_batch_size: int
+    max_batch_wait_ms: float
+    inference_timeout_seconds: float
+    worker_running: bool
+    processed_batches: int
+    processed_items: int
+    last_batch_size: int
+    max_observed_batch_size: int
 
 
 class HealthResponse(BaseModel):

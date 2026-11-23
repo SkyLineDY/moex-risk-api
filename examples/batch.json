@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "ticker": "SBER",
+      "board": "TQBR",
+      "annual_volatility_pct": 24,
+      "max_drawdown_pct": 12,
+      "avg_daily_turnover_mrub": 150,
+      "bid_ask_spread_pct": 0.1,
+      "observation_days": 60
+    },
+    {
+      "ticker": "MOEX",
+      "board": "TQBR",
+      "annual_volatility_pct": 80,
+      "max_drawdown_pct": 60,
+      "avg_daily_turnover_mrub": 5,
+      "bid_ask_spread_pct": 1.5,
+      "observation_days": 60
+    }
+  ]
+}

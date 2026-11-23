@@ -20,13 +20,15 @@ def test_health_model_and_contract(client):
     assert client.get("/model-info").json()["model_type"] == "deterministic_heuristic"
     assert len(client.get("/instruments").json()) == 5
     schema = client.get("/openapi.json").json()
-    assert set(schema["paths"]) == {"/health", "/model-info", "/instruments", "/predict", "/predictions", "/predictions/{request_id}"}
-    assert {"201", "400", "422", "503"} <= set(schema["paths"]["/predict"]["post"]["responses"])
+    assert {"/health", "/model-info", "/instruments", "/predict", "/predictions", "/predictions/{request_id}",
+            "/batch-predict", "/predict-queued", "/queue-status", "/predictions/by-weekday",
+            "/requests/{request_id}/predictions", "/llm/chat", "/predict-with-llm"} == set(schema["paths"])
+    assert {"200", "400", "422", "503"} <= set(schema["paths"]["/predict"]["post"]["responses"])
 
 
 def test_create_and_retrieve(client):
     response = client.post("/predict", json=EXAMPLE)
-    assert response.status_code == 201
+    assert response.status_code == 200
     result = response.json()
     assert result["risk_score"] == pytest.approx(0.185)
     assert result["risk_level"] == "low"
@@ -65,13 +67,13 @@ def test_business_error(client, patch):
 
 def test_normalization(client):
     result = client.post("/predict", json=EXAMPLE | {"ticker": " sber ", "board": "tqbr"})
-    assert result.status_code == 201
+    assert result.status_code == 200
     assert result.json()["ticker"] == "SBER"
 
 
 def test_missing_id(client):
     assert client.get(f"/predictions/{uuid4()}").status_code == 404
-    assert client.get("/predictions/not-a-uuid").status_code == 422
+    assert client.get("/predictions/not-a-uuid").status_code == 404
 
 
 @pytest.mark.parametrize("query", ["limit=-5", "limit=0", "limit=101", "offset=-1", "risk_level=bad"])

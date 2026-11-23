@@ -5,7 +5,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = "http://127.0.0.1:8001"
+BASE = "http://127.0.0.1:8002"
 payload = json.loads((ROOT / "examples/low.json").read_text(encoding="utf-8"))
 rows = []
 
@@ -28,7 +28,7 @@ def check(name, method, path, expected, data=None):
 
 check("Проверка сервиса", "GET", "/health", 200)
 check("Информация о модели", "GET", "/model-info", 200)
-result = check("Корректная оценка", "POST", "/predict", 201, payload)
+result = check("Корректная оценка", "POST", "/predict", 200, payload)
 check("Отрицательная волатильность", "POST", "/predict", 422, payload | {"annual_volatility_pct": -10})
 check("Неизвестный тикер", "POST", "/predict", 400, payload | {"ticker": "UNKNOWN"})
 check("Существующий UUID", "GET", "/predictions/" + result["request_id"], 200)
